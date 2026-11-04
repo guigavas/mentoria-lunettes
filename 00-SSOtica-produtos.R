@@ -76,3 +76,50 @@ stopifnot(nrow(dados) == nrow(dados_loja_lunettes) + nrow(dados_loja_nova))
 print(table(dados$loja))
 
 
+## Passo 2, Verificar se temos SKUs unique, via concat com countunique
+#names(dados)
+
+dados <- dados %>%
+  mutate(chave_ref = paste(`Referência`, `Descrição`, `Unidade`, sep = "_"))
+# sep é o separador da concat, e por isso, usa paste ao invés de paste0
+
+# resumo de unicidade
+dados %>%
+  summarise(
+    n_linhas = n(),
+    n_chaves = n_distinct(chave_ref),
+    flag_unique = n_linhas - n_chaves
+  )
+
+# QC 1- Investigando os flag_unique
+
+dados |>
+  count (chave_ref) |>
+  filter (n > 1) |>
+  arrange (desc(n))
+
+#QC 2- Observar apenas linhas com duplicata
+# verificar se há algo diferente (preço, etc)
+
+colisoes <- dados %>%
+  count(chave_ref) %>%
+  filter(n > 1) %>%
+  pull(chave_ref)
+
+dados %>%
+  filter(chave_ref %in% colisoes) %>%
+  arrange(chave_ref) %>%
+  View()
+
+#QC 3- criar base_catalogo — produtos únicos, sem dimensão loja
+# remove duplicata considerando só essas colunas, mantendo a 1ª linha de cada grupo
+
+base_catalogo <- dados %>%
+  distinct(chave_ref, .keep_all = TRUE)
+
+nrow(base_catalogo)
+
+usethis::create_github_token()
+gitcreds::gitcreds_set()
+usethis::git_sitrep()
+usethis::use_github()
