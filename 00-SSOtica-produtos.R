@@ -49,8 +49,8 @@ dados_loja_nova <- read_excel(file_loja_nova)
 
 View(dados_loja_lunettes)
 View(dados_loja_nova)
-str(dados_loja_lunettes)
-str(dados_loja_nova)
+glimpse(dados_loja_lunettes)
+glimpse(dados_loja_nova)
 
 ## Passo 1, Agregação e processando novas variáveis de controle
 
