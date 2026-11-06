@@ -21,7 +21,6 @@ latest_file <- function(prefixo, file = "dados"){
   # $ faz o fim do nome concatenado
   # full.names signfinica trazer o diretório todo
 
-  if (length(files) == 0) stop("Nenhum arquivo com prefixo: ", prefixo)
   files[order(files, decreasing = TRUE)][1]
 }
 # IF, se não achar nada, falha cedo com mensagem clara
@@ -30,6 +29,11 @@ latest_file <- function(prefixo, file = "dados"){
 
 file_loja_lunettes <- latest_file("exportacao-produtos-lunettes_by_lari-")
 file_loja_nova <- latest_file("exportacao-produtos-nova_loja-")
+
+#Tratamento de erro
+if (length(file_loja_lunettes) == 0 || length(file_loja_nova) == 0) {
+  stop("arquivo(s) não encontrado(s)")
+}
 
 dados_loja_lunettes <- read_excel(file_loja_lunettes)
 dados_loja_nova <- read_excel(file_loja_nova)
