@@ -119,7 +119,4 @@ base_catalogo <- dados %>%
 
 nrow(base_catalogo)
 
-usethis::create_github_token()
-gitcreds::gitcreds_set()
-usethis::git_sitrep()
-usethis::use_github()
+
