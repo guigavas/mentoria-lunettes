@@ -11,21 +11,30 @@ library(dplyr) # union
 
 # Função: devolve o caminho do arquivo mais recente com dado prefixo
 latest_file <- function(prefixo, file = "dados"){
-  files <- list.files(
-    path = file, #onde procurar
-    pattern = paste0("^", prefixo, ".*\\.xlsx$"), #só entra arquivos cujo nome casa com o pattern
-    full.names = TRUE
-  )
-  # timestamp entra a partir do .*
+  files <-
+    list.files(
+      path = file, #onde procurar
+      pattern =
+        paste0(
+          "^",
+          prefixo,
+          ".*[0-9]{4,4}-[01][0-9]-[0-3][0-9]",
+          "_[0-2][0-9]-[0-5][0-9]-[0-5][0-9]\\.xlsx$"
+        ), #só entra arquivos cujo nome casa com o pattern
+      full.names = TRUE
+    ) |>
+    sort(decreasing = TRUE) |>
+    head(n = 1)
+  # não deixe mais do que 1 informação por linha
+  # [0-9], qualquer 1 único caracter que seja ou 0 a 9
+  # {n,m}, no mínimo n repetições do caracter que vem antes, e no máximo m
+  # entra qualquer caracter a partir do ponto em ".*"
   # regex é o texto concatenado, e \\. é um escape em R
   # $ faz o fim do nome concatenado
   # full.names signfinica trazer o diretório todo
+  # head n = 1
 
-  files[order(files, decreasing = TRUE)][1]
 }
-# IF, se não achar nada, falha cedo com mensagem clara
-# order: compara as strings e ordena os arquivos com maior timestamp
-# [1]: pega o primeiro que, após a ordenação decrescente, é o mais recente
 
 file_loja_lunettes <- latest_file("exportacao-produtos-lunettes_by_lari-")
 file_loja_nova <- latest_file("exportacao-produtos-nova_loja-")
