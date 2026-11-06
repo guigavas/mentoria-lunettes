@@ -57,15 +57,17 @@ nomes_lunettes <- dados_loja_lunettes |> names() |> sort()
 nomes_nova <- dados_loja_nova |> names() |> sort()
 
 # QC 1- Mesma quantidade de colunas e mesmos nomes:
-if (!identical(names(dados_loja_lunettes),names(dados_loja_nova))) {
+if (!identical(nomes_lunettes,nomes_nova)) {
   # QC 2- Checar e dizer o que difere:
-  lunettes_only <- setdiff(names(dados_loja_lunettes), names(dados_loja_nova)) #somente na lunettes
-  nova_only <- setdiff(names(dados_loja_nova), names(dados_loja_lunettes)) #somente na loja nova
   stop(
     "Colunas divergem entre lojas.\n",
-    "Só em Lunettes: ", paste0(lunettes_only, collapse = ","), "\n", # "\n" é quebra de linha pro text do diagnóstico
-    "Só em loja_nova: ", paste0(nova_only, collapse = ",")
-    )
+    "Só em Lunettes: ",
+    setdiff(nomes_lunettes, nomes_nova) |>
+      paste0(collapse = ","), "\n",
+    "Só em loja_nova: ",
+    setdiff(nomes_nova, nomes_lunettes) |>
+      paste0(collapse = ",")
+  )
 }
 
 # Union dos dados
