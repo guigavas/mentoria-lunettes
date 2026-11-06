@@ -53,6 +53,8 @@ glimpse(dados_loja_lunettes)
 glimpse(dados_loja_nova)
 
 ## Passo 1, Agregação e processando novas variáveis de controle
+nomes_lunettes <- dados_loja_lunettes |> names() |> sort()
+nomes_nova <- dados_loja_nova |> names() |> sort()
 
 # QC 1- Mesma quantidade de colunas e mesmos nomes:
 if (!identical(names(dados_loja_lunettes),names(dados_loja_nova))) {
