@@ -6,10 +6,11 @@
 library(readxl) # ler excel
 library(dplyr) # union
 
+########################
+## Passo 0, função que otimiza busca do arquivo(s) mais recente(s) importado(s)
+########################
 
-## Passo 0, função que otimiza busca do arquivo recente
-
-# Função: devolve o caminho do arquivo mais recente com dado prefixo
+# Função: devolve o caminho do arquivo mais recente, a partir de um prefixo padrão
 latest_file <- function(prefixo, file = "dados"){
   files <-
     list.files(
@@ -25,40 +26,47 @@ latest_file <- function(prefixo, file = "dados"){
     ) |>
     sort(decreasing = TRUE) |>
     head(n = 1)
-  # não deixe mais do que 1 informação por linha
-  # [0-9], qualquer 1 único caracter que seja ou 0 a 9
-  # {n,m}, no mínimo n repetições do caracter que vem antes, e no máximo m
-  # entra qualquer caracter a partir do ponto em ".*"
-  # regex é o texto concatenado, e \\. é um escape em R
-  # $ faz o fim do nome concatenado
-  # full.names signfinica trazer o diretório todo
-  # head n = 1
+  # Explicando racional:
+    # [0-9], significa qualquer 1 único caracter que seja de 0 a 9
+    # {n,m}, significa no mínimo n repetições do caracter que vem antes, e no máximo m
+    # entra qualquer caracter a partir do ponto em ".*"
+    # $ faz o fim do nome concatenado
+    # full.names signfinica trazer o diretório todo
+    # head n = 1, significa pegar apenas 1 file no caso a mais recente
 
 }
 
-file_loja_lunettes <- latest_file("exportacao-produtos-lunettes_by_lari-")
-file_loja_nova <- latest_file("exportacao-produtos-nova_loja-")
+file_loja_lunettes <- latest_file("exportacao-produtos-lunettes_by_lari-") # prefixo
+file_loja_nova <- latest_file("exportacao-produtos-nova_loja-") # prefixo
 
-#Tratamento de erro
+# Função: Tratamento de erro
 if (length(file_loja_lunettes) == 0 || length(file_loja_nova) == 0) {
   stop("arquivo(s) não encontrado(s)")
 }
 
+# Função: Trazer os dados
 dados_loja_lunettes <- read_excel(file_loja_lunettes)
 dados_loja_nova <- read_excel(file_loja_nova)
 
-View(dados_loja_lunettes)
-View(dados_loja_nova)
+# View(dados_loja_lunettes)
+# View(dados_loja_nova)
 glimpse(dados_loja_lunettes)
 glimpse(dados_loja_nova)
 
-## Passo 1, Agregação e processando novas variáveis de controle
+########################
+## Passo 1, Agregação e categorizando as variáveis de controle
+########################
+
 nomes_lunettes <- dados_loja_lunettes |> names() |> sort()
 nomes_nova <- dados_loja_nova |> names() |> sort()
+# Explicando racional
+  # names extrai os nomes das colunas do dataframe (retorna um vetor de caracteres)
+  # fizemos o sort, evitando falso QC por mismatch de variáveis em posições diferentes
 
-# QC 1- Mesma quantidade de colunas e mesmos nomes:
+# QC 1- Valida se temos a mesma quantidade de colunas e mesmos nomes
 if (!identical(nomes_lunettes,nomes_nova)) {
-  # QC 2- Checar e dizer o que difere:
+  # QC 2- if TRUE, checa e diz qual(is) diferem, seja comparando A com B,
+  # seja B com A:
   stop(
     "Colunas divergem entre lojas.\n",
     "Só em Lunettes: ",
@@ -70,22 +78,26 @@ if (!identical(nomes_lunettes,nomes_nova)) {
   )
 }
 
-# Union dos dados
-# Extrair nome da loja a partir do nome do arquivo
+# Função pré-union: Extrair o nome da loja a partir do arquivo importado
 
 extract_SKU_loja <- function(path) {
-  # de "dados/exportacao-produtos-lunettes_by_lari-2026-10-29_...xlsx"
-  # para "lunettes_by_lari"
   sub(
     "^exportacao-produtos-(.*)-\\d{4}-\\d{2}-\\d{2}_.*\\.xlsx$",
     "\\1",
     basename(path)
   )
 }
+# Explicando racional:
+  #
+  # de "dados/exportacao-produtos-lunettes_by_lari-2026-10-29_...xlsx"
+  # para "lunettes_by_lari"
 
 dados_loja_lunettes$loja <- extract_SKU_loja(file_loja_lunettes)
 dados_loja_nova$loja     <- extract_SKU_loja(file_loja_nova)
 
+
+
+# Função: Union dos dados
 dados <- bind_rows(dados_loja_lunettes, dados_loja_nova)
 
 # Confere pós-union
